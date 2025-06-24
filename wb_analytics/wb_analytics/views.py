@@ -1,10 +1,13 @@
 import requests
 
+from django_filters.rest_framework import (DjangoFilterBackend, FilterSet,
+                                           NumberFilter)
 from rest_framework import generics
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from .models import Product
+from .serializers import ProductSerializer
 
 
 @api_view(['GET'])
@@ -19,7 +22,7 @@ def parse_products(request, article):
             'page': 1,              # Номер страницы (пагинация)
             'sort': 'popular',      # Сортировка (
                                     # popular - По популярности,
-                                    # rate - По популярности,
+                                    # rate - По рейтингу,
                                     # priceup - По возрастанию цены,
                                     # pricedown - По убыванию цены,
                                     # newly - По новинкам,
@@ -69,12 +72,19 @@ def parse_products(request, article):
         return {'error': str(e)}
 
 
+class ProductFilter(FilterSet):
+    min_price = NumberFilter(field_name='sale_price', lookup_expr='gte')
+    max_price = NumberFilter(field_name='sale_price', lookup_expr='lte')
+    min_rating = NumberFilter(field_name='rating', lookup_expr='gte')
+    min_reviews = NumberFilter(field_name='reviews', lookup_expr='gte')
+
+    class Meta:
+        model = Product
+        fields = []
+
+
 class ProductList(generics.ListAPIView):
     queryset = Product.objects.all()
-    # serializer_class = ProductSerializer
-    # filter_backends = [DjangoFilterBackend]
-    # filterset_fields = {
-    #     'price': ['gte', 'lte'],  # Фильтр по диапазону цен
-    #     'rating': ['gte'],         # Минимальный рейтинг
-    #     'reviews': ['gte'],        # Минимальное количество отзывов
-    # }
+    serializer_class = ProductSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = ProductFilter
