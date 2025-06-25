@@ -1,5 +1,4 @@
 import requests
-
 from django_filters.rest_framework import (DjangoFilterBackend, FilterSet,
                                            NumberFilter)
 from rest_framework import generics
@@ -13,6 +12,9 @@ from .serializers import ProductSerializer
 @api_view(['GET'])
 def parse_products(request, article):
     try:
+        # Очистка БД перед парсингом
+        # Product.objects.all().delete()
+
         base_url = 'https://catalog.wb.ru/catalog/pants/v2/catalog'
         params = {
             'appType': 1,           # Тип приложения (1 - веб)
