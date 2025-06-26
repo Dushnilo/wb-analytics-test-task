@@ -81,8 +81,11 @@
 
 ## Запуск проекта
 ```bash
+pip install -r requirements.txt
+
 # Бекенд:
 cd backend
+python manage.py migrate
 python manage.py runserver
 
 # Фронтенд:
