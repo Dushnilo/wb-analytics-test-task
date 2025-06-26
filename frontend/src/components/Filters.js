@@ -18,6 +18,7 @@ export default function Filters({ filters, setFilters }) {
                 <span>Диапазон цен (руб.):</span>
                 <TextField
                     size="small"
+                    label="От"
                     value={filters.minPrice}
                     onChange={(e) => setFilters({ ...filters, minPrice: e.target.value })}
                     sx={{ width: 80 }}
@@ -26,6 +27,7 @@ export default function Filters({ filters, setFilters }) {
                 <span>-</span>
                 <TextField
                     size="small"
+                    label="До"
                     value={filters.maxPrice}
                     onChange={(e) => setFilters({ ...filters, maxPrice: e.target.value })}
                     sx={{ width: 80 }}
