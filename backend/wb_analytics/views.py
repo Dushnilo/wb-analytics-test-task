@@ -16,6 +16,8 @@ def parse_products(request, query):
         with transaction.atomic():
             Product.objects.all().delete()
 
+            sort_param = request.GET.get('sort', 'popular')
+
             base_url = 'https://search.wb.ru/exactmatch/ru/common/v13/search'
             params = {
                 'appType': 1,
@@ -25,13 +27,7 @@ def parse_products(request, query):
                 'resultset': 'catalog',
                 'suppressSpellcheck': 'false',
                 'page': 1,
-                'sort': 'popular',      # Сортировка (
-                                        # popular - По популярности,
-                                        # rate - По популярности,
-                                        # priceup - По возрастанию цены,
-                                        # pricedown - По убыванию цены,
-                                        # newly - По новинкам,
-                                        # benefit - Сначала выгодные)
+                'sort': sort_param,
             }
 
             response = requests.get(base_url, params=params, timeout=10,)
