@@ -18,3 +18,12 @@
   align-items: center;
   gap: 8px;
 }
+
+.error-message {
+  color: #d32f2f;
+  background-color: #fdecea;
+  padding: 10px 15px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  border-left: 4px solid #d32f2f;
+}

@@ -1,4 +1,5 @@
 import requests
+from django.db import transaction
 from django_filters.rest_framework import (DjangoFilterBackend, FilterSet,
                                            NumberFilter)
 from rest_framework import generics
@@ -10,65 +11,68 @@ from .serializers import ProductSerializer
 
 
 @api_view(['GET'])
-def parse_products(request, article):
+def parse_products(request, query):
     try:
-        # Очистка БД перед парсингом
-        # Product.objects.all().delete()
+        with transaction.atomic():
+            Product.objects.all().delete()
 
-        base_url = 'https://catalog.wb.ru/catalog/pants/v2/catalog'
-        params = {
-            'appType': 1,           # Тип приложения (1 - веб)
-            'curr': 'rub',          # Валюта
-            'dest': -1029256,       # ID региона доставки (1029256 - Москва)
-            'cat': int(article),    # Артикул категории
-            'page': 1,              # Номер страницы (пагинация)
-            'sort': 'popular',      # Сортировка (
-                                    # popular - По популярности,
-                                    # rate - По рейтингу,
-                                    # priceup - По возрастанию цены,
-                                    # pricedown - По убыванию цены,
-                                    # newly - По новинкам,
-                                    # benefit - Сначала выгодные)
-        }
-        response = requests.get(base_url, params=params, timeout=10,)
+            base_url = 'https://search.wb.ru/exactmatch/ru/common/v13/search'
+            params = {
+                'appType': 1,
+                'curr': 'rub',
+                'dest': -1029256,
+                'query': query,
+                'resultset': 'catalog',
+                'suppressSpellcheck': 'false',
+                'page': 1,
+                'sort': 'popular',      # Сортировка (
+                                        # popular - По популярности,
+                                        # rate - По популярности,
+                                        # priceup - По возрастанию цены,
+                                        # pricedown - По убыванию цены,
+                                        # newly - По новинкам,
+                                        # benefit - Сначала выгодные)
+            }
 
-        if response.status_code != 200:
-            raise Exception(response.status_code)
+            response = requests.get(base_url, params=params, timeout=10,)
 
-        data = response.json()
-        if not len(data['data']['products']):
-            return Response(status=404)
+            if response.status_code != 200:
+                raise Exception(response.status_code)
 
-        products = data['data']['products']
-        count = 0
-        for product in products:
-            name = product.get('name', None)
-            price = None
-            sale_price = None
-            rating = product.get('reviewRating', None)
-            reviews = product.get('feedbacks', None)
+            data = response.json()
+            if not len(data['data']['products']):
+                return Response(status=404)
 
-            if product.get('sizes'):
-                price = product['sizes'][0].get('price', {}).get('basic')
-                if price is not None:
-                    price = float(price / 100)
+            products = data['data']['products']
+            count = 0
+            for product in products:
+                name = product.get('name', None)
+                price = None
+                sale_price = None
+                rating = product.get('reviewRating', None)
+                reviews = product.get('feedbacks', None)
 
-                sale_price = product['sizes'][0].get(
-                    'price', {}).get('product')
-                if sale_price is not None:
-                    sale_price = float(sale_price / 100)
+                if product.get('sizes'):
+                    price = product['sizes'][0].get('price', {}).get('basic')
+                    if price is not None:
+                        price = float(price / 100)
 
-            Product.objects.create(
-                name=name,
-                price=price,
-                sale_price=sale_price,
-                rating=rating,
-                reviews=reviews
-            )
-            count += 1
+                    sale_price = product['sizes'][0].get(
+                        'price', {}).get('product')
+                    if sale_price is not None:
+                        sale_price = float(sale_price / 100)
 
-        return Response({'status': 'success', 'category_id': article,
-                         'created': count})
+                Product.objects.create(
+                    name=name,
+                    price=price,
+                    sale_price=sale_price,
+                    rating=rating,
+                    reviews=reviews
+                )
+                count += 1
+
+            return Response({'status': 'success', 'category_id': query,
+                            'created': count})
 
     except Exception as e:
         return {'error': str(e)}
