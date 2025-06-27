@@ -54,14 +54,15 @@
 
 Линейный график: Размер скидки на товар vs рейтинг товара.
 
-## Пояснения
+## Примечание
 - Использована БД SQLite для простоты тестирования
 - По умолчанию парсится первая страница выдачи Wildberries (до 100 товаров). При необходимости можно масштабировать на полный парсинг через обработку пагинации.
 
 ## Технологии
 **Backend:**
 - Python 3.7+
-- Django 5.2.3 + DRF
+- Django + DRF
+- Requests (для парсинга WB)
 - SQLite (для тестирования)
 
 **Frontend:**
@@ -71,9 +72,13 @@
 
 ## Запуск проекта
 ```bash
-pip install -r requirements.txt
+git clone https://github.com/Dushnilo/wb-analytics-test-task.git
 
 # Бекенд:
+python -m venv venv
+source venv/bin/activate  # Linux/Mac
+venv\Scripts\activate    # Windows
+pip install -r requirements.txt
 cd backend
 python manage.py makemigrations
 python manage.py migrate
@@ -84,7 +89,5 @@ cd frontend
 npm install
 npm start
 ```
-
 ---
-
 _Выполнено в рамках тестового задания._
