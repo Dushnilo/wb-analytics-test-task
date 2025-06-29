@@ -89,5 +89,6 @@ cd frontend
 npm install
 npm start
 ```
+![Логотип](images/image.png)
 ---
 _Выполнено в рамках тестового задания._
